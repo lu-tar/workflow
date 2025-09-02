@@ -1,0 +1,41 @@
+#!/bin/bash
+
+SESSIONS_FILE="$HOME/scripts/sessions.txt"
+PATHS="$HOME/scripts/paths.txt"
+OBSIDIAN_PATH="/mnt/c/Users/TRZLCU97E/home/obsidian-vault"
+
+[ ! -f "$SESSIONS_FILE" ] && touch "$SESSIONS_FILE"
+[ ! -f "$PATHS" ] && touch "$PATHS"
+
+changedir() {
+    # Seleziona path con fzf e cambia directory (source hook)
+    TARGET=$(cat "$PATHS" | fzf) || return 1
+
+    cd "$TARGET" || return
+}
+
+changesession() {
+        TARGET=$(cat "$SESSIONS_FILE" | fzf)
+        echo "$TARGET"
+        eval cd $TARGET && code .
+}
+
+obsidianfinder(){
+        cd $OBSIDIAN_PATH && find . -type f -name "*.md" | fzf --preview 'bat --style=numbers --color=always --line-range=:500 {}'
+}
+
+case "${1:-default}" in
+    session|s)
+        changesession
+        ;;
+    obsidian|o)
+        obsidianfinder
+        ;;
+    h|help)
+        echo "Usage: hook {}"
+        ;;
+    *)
+                # Change directory
+        changedir
+        ;;
+esac
